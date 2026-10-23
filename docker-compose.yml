@@ -1,0 +1,63 @@
+# Ambiente Flutter em container. Nada precisa ser instalado na máquina além do Docker.
+#
+# Uso rápido (veja o README para todos os comandos):
+#   docker compose build                                  (primeira vez)
+#   docker compose run --rm flutter flutter test
+#   docker compose up web                                 -> http://localhost:8080
+#   docker compose run --rm flutter flutter build apk --release
+name: boraver
+
+x-flutter: &flutter
+  # Imagem local = cirruslabs/flutter:3.44.0 + SDK Web pré-baixado (docker/Dockerfile).
+  # Versão fixa para builds reproduzíveis (a mesma usada no deploy do Render).
+  image: boraver-flutter:3.44.0
+  build:
+    context: ./docker
+  working_dir: /app
+  volumes:
+    - .:/app
+    # Caches em volumes nomeados: são baixados uma vez e reaproveitados,
+    # sem encher a pasta do projeto nem a imagem.
+    - pub-cache:/root/.pub-cache
+    - gradle-cache:/root/.gradle
+    - android-ndk:/opt/android-sdk-linux/ndk
+  environment:
+    PUB_CACHE: /root/.pub-cache
+    # Sem daemon do Gradle: a memória é liberada assim que o build termina.
+    GRADLE_OPTS: -Dorg.gradle.daemon=false
+    FLUTTER_SUPPRESS_ANALYTICS: "true"
+  # Teto de RAM do container (o WSL inteiro está limitado em ~/.wslconfig).
+  mem_limit: 3g
+  memswap_limit: 5g
+
+services:
+  flutter:
+    <<: *flutter
+
+  # Servidor de desenvolvimento web. Para hot restart: docker attach boraver-web-1 e tecle R.
+  web:
+    <<: *flutter
+    ports:
+      - "8080:8080"
+    stdin_open: true
+    tty: true
+    command: >
+      flutter run -d web-server --dart-define-from-file=.env
+      --web-hostname 0.0.0.0 --web-port 8080
+
+  # Serve o build de produção (build/web) com um servidor estático mínimo (~20 MB de RAM).
+  # Gere antes: docker compose run --rm flutter flutter build web --release
+  preview:
+    image: boraver-flutter:3.44.0
+    working_dir: /app/build/web
+    volumes:
+      - ./build/web:/app/build/web:ro
+    ports:
+      - "8081:8081"
+    mem_limit: 128m
+    command: python3 -m http.server 8081
+
+volumes:
+  pub-cache:
+  gradle-cache:
+  android-ndk:

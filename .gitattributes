@@ -1,0 +1,3 @@
+# Scripts executados no Linux (Render/container) precisam de quebra de linha LF,
+# mesmo que o repositório seja clonado no Windows.
+*.sh text eol=lf

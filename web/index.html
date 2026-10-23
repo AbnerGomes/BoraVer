@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Substituído pelo valor de --base-href no build (padrão: "/"). -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BoraVer: organize os filmes que você quer ver e deixe o sorteio escolher o próximo.">
+  <meta name="theme-color" content="#40352E">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BoraVer">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>BoraVer</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #F2E9DC; }
+    /* Indicador simples enquanto o Flutter carrega; removido no primeiro quadro. */
+    #boraver-loading {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
+      font-family: system-ui, sans-serif; color: #6B625A;
+    }
+    #boraver-loading img { width: 72px; height: 72px; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { #boraver-loading img { animation: none; } }
+  </style>
+</head>
+<body>
+  <div id="boraver-loading" aria-live="polite">
+    <img src="icons/Icon-192.png" alt="">
+    <span>Preparando a pipoca…</span>
+  </div>
+  <noscript>O BoraVer precisa de JavaScript ativado.</noscript>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var el = document.getElementById('boraver-loading');
+      if (el) el.remove();
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
