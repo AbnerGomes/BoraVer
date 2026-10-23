@@ -38,4 +38,19 @@ if [ -z "${TMDB_API_KEY:-}" ]; then
 fi
 flutter build web --release --dart-define=TMDB_API_KEY="${TMDB_API_KEY:-}"
 
+# Prévia do link: og:image precisa de URL absoluta. O Render informa o
+# endereço público em RENDER_EXTERNAL_URL; SITE_URL permite sobrescrever
+# (ex.: domínio próprio).
+SITE_URL="${SITE_URL:-${RENDER_EXTERNAL_URL:-}}"
+if [ -n "$SITE_URL" ]; then
+  SITE_URL="${SITE_URL%/}"
+  sed -i \
+    -e "s|content=\"og-image.png|content=\"$SITE_URL/og-image.png|g" \
+    -e "s|<meta property=\"og:type\"|<meta property=\"og:url\" content=\"$SITE_URL/\">\n  &|" \
+    build/web/index.html
+  echo ">> Prévia do link apontando para $SITE_URL"
+else
+  echo ">> AVISO: SITE_URL/RENDER_EXTERNAL_URL não definida; a imagem de prévia do link pode não aparecer."
+fi
+
 echo ">> Build pronto em build/web"
